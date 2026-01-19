@@ -59,7 +59,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setIsLoading(true);email, 
+    setIsLoading(true); 
     try {
       const res = await fetch("/api/register", {
         method: "POST",
