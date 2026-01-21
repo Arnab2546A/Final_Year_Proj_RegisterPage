@@ -1,72 +1,57 @@
-//Frontend registration page with form validation and submission
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import "./register.css";
 
-export default function RegisterPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function VerificationPage() {
+  const router = useRouter();
+  const [token, setToken] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateUsername = (value: string): string => {
-    if (value.length < 3) return "Username must be at least 3 characters";
-    if (!/^[a-zA-Z0-9_-]+$/.test(value)) return "Username can only contain letters, numbers, underscore, and hyphen";
-    return "";
-  };
+  useEffect(() => {
+    // Clear any existing verification first
+    localStorage.removeItem("mfa_verified");
+    document.cookie = "mfa_verified=; path=/; max-age=0";
 
-  const validatePassword = (value: string): string => {
-    if (value.length < 6) return "Password must be at least 6 characters";
-    if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter";
-    if (!/[0-9]/.test(value)) return "Password must contain at least one number";
-    return "";
-  };
+    // Clear verification when browser/tab closes
+    const clearAuth = () => {
+      localStorage.removeItem("mfa_verified");
+      document.cookie = "mfa_verified=; path=/; max-age=0";
+    };
+    window.addEventListener("beforeunload", clearAuth);
+    return () => window.removeEventListener("beforeunload", clearAuth);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
-    if (!username.trim() || !password || !confirmPassword) {
-      setError("All fields are required");
-      return;
-    }
-    const usernameError = validateUsername(username);
-    if (usernameError) {
-      setError(usernameError);
-      return;
-    }
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    if (!token.trim()) {
+      setError("Enter the 6-digit code from your authenticator app");
       return;
     }
 
-    setIsLoading(true); 
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, confirmPassword }),
+        body: JSON.stringify({ token }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-      } else {
-        setSuccess("Registration successful!");
-        setUsername("");
-        setPassword("");
-        setConfirmPassword("");
+      if (!res.ok || !data.ok) {
+        setError(data.error || "Invalid code. Try again.");
+        return;
       }
+
+      // Set cookie and localStorage (session only - expires on browser close)
+      localStorage.setItem("mfa_verified", "true");
+      document.cookie = "mfa_verified=true; path=/"; // Session cookie
+      router.push("/register");
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      setError("Verification failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -76,59 +61,35 @@ export default function RegisterPage() {
     <div className="container">
       <form className="register-card" onSubmit={handleSubmit}>
         <div className="card-header">
-          <h1>Create Account</h1>
-          <p className="subtitle">Join us today</p>
+          <h1>Verify Authentication</h1>
+          <p className="subtitle">Enter the 6-digit code from your authenticator app</p>
         </div>
 
         {error && <div className="error">{error}</div>}
-        {success && <div className="success">{success}</div>}
 
         <div className="input-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="token">Authenticator Code</label>
           <input
-            id="username"
+            id="token"
             type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="123456"
+            maxLength={6}
+            value={token}
+            onChange={(e) => setToken(e.target.value.replace(/\D/g, ""))}
             disabled={isLoading}
-            aria-label="Username"
+            aria-label="Authenticator Code"
           />
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            aria-label="Password"
-          />
-          <span className="hint">Min 6 chars, 1 uppercase, 1 number</span>
-        </div>
-
-        <div className="input-group">
-          <label htmlFor="confirm-password">Confirm Password</label>
-          <input
-            id="confirm-password"
-            type="password"
-            placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={isLoading}
-            aria-label="Confirm Password"
-          />
+          <span className="hint">Codes refresh every 30 seconds.</span>
         </div>
 
         <button type="submit" disabled={isLoading} className="submit-button">
-          {isLoading ? "Registering..." : "Register"}
+          {isLoading ? "Verifying..." : "Verify"}
         </button>
 
         <p className="login-link">
-          Already have an account? <a href="/login">Login here</a>
+          Need to set up? <a href="/auth/setup">Scan QR</a>
         </p>
       </form>
     </div>

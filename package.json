@@ -9,16 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^14.0.0",
-    "nodemailer": "^7.0.11",
-    "pg": "^8.16.3",
+    "next": "^14.2.35",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.17.2",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/nodemailer": "^7.0.4",
-    "@types/react": "^18.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^20.19.30",
+    "@types/nodemailer": "^7.0.5",
+    "@types/react": "^18.3.27",
+    "typescript": "^5.9.3"
   }
 }

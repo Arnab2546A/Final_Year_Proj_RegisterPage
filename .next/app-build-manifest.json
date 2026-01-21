@@ -10,6 +10,23 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/layout.js"
+    ],
+    "/register/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/register/page.css",
+      "static/chunks/app/register/page.js"
+    ],
+    "/auth/setup/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/auth/setup/page.css",
+      "static/chunks/app/auth/setup/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
