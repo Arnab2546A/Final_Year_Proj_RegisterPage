@@ -1,10 +1,10 @@
+//Frontend registration page with form validation and submission
 "use client";
 
 import { useState } from "react";
 import "./register.css";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -15,11 +15,6 @@ export default function RegisterPage() {
   const validateUsername = (value: string): string => {
     if (value.length < 3) return "Username must be at least 3 characters";
     if (!/^[a-zA-Z0-9_-]+$/.test(value)) return "Username can only contain letters, numbers, underscore, and hyphen";
-    return "";
-  };
-
-  const validateEmail = (value: string): string => {
-    if (!value.includes("@") || !value.includes(".")) return "Please enter a valid email address";
     return "";
   };
 
@@ -35,13 +30,8 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
-    if (!email.trim() || !username.trim() || !password || !confirmPassword) {
+    if (!username.trim() || !password || !confirmPassword) {
       setError("All fields are required");
-      return;
-    }
-    const emailError = validateEmail(email);
-    if (emailError) {
-      setError(emailError);
       return;
     }
     const usernameError = validateUsername(username);

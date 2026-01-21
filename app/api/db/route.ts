@@ -1,3 +1,4 @@
+//it is used to test the database connection health
 import { NextResponse } from "next/server";
 import { ping } from "../../../lib/db";
 

@@ -1,5 +1,5 @@
+// Database connection pool setup using pg module
 import { Pool, PoolConfig } from "pg";
-
 function buildConfig(): PoolConfig {
   if (process.env.DATABASE_URL) {
     return {
@@ -30,7 +30,7 @@ export const pool = new Pool({
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
 });
-
+//tests db connection
 export async function ping() {
   const res = await pool.query("SELECT NOW() as now");
   return res.rows[0];

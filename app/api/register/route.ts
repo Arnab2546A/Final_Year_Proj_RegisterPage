@@ -1,3 +1,4 @@
+//backend API route to handle user registration
 import { NextResponse } from "next/server";
 import { execFile } from "child_process";
 import { promisify } from "util";
