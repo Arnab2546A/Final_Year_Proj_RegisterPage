@@ -20,7 +20,9 @@ export async function POST(req: Request) {
       secret,
       encoding: "base32",
       token,
-      window: 1, // allow slight clock drift
+      window: 2, // allow slight clock drift (~1 minute each side)
+      step: 30,
+      digits: 6,
     });
 
     if (!verified) {

@@ -1,8 +1,8 @@
-// File: C:\Users\Admin\OneDrive\Desktop\register_page\app\api\auth\qr\route.ts
-import * as entry from '../../../../../../app/api/auth/qr/route.js'
+// File: C:\Users\Admin\OneDrive\Desktop\register_page\app\api\register\route.ts
+import * as entry from '../../../../../app/api/register/route.js'
 import type { NextRequest } from 'next/server.js'
 
-type TEntry = typeof import('../../../../../../app/api/auth/qr/route.js')
+type TEntry = typeof import('../../../../../app/api/register/route.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

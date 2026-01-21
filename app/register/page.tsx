@@ -13,6 +13,15 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const authToken = localStorage.getItem("mfa_verified");
+    const cookie = document.cookie.split("; ").find((row) => row.startsWith("mfa_verified="));
+
+    if (!authToken && !cookie) {
+      router.push("/");
+    }
+  }, [router]);
+
   const validateUsername = (value: string): string => {
     if (value.length < 3) return "Username must be at least 3 characters";
     if (!/^[a-zA-Z0-9_-]+$/.test(value)) return "Username can only contain letters, numbers, underscore, and hyphen";
@@ -31,43 +40,61 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
+    // Validate all fields
     if (!username.trim() || !password || !confirmPassword) {
       setError("All fields are required");
       return;
     }
+
     const usernameError = validateUsername(username);
     if (usernameError) {
       setError(usernameError);
       return;
     }
+
     const passwordError = validatePassword(password);
     if (passwordError) {
       setError(passwordError);
       return;
     }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      const res = await fetch("/api/register", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, confirmPassword }),
+        body: JSON.stringify({
+          username,
+          password,
+          confirmPassword,
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+
+      const data = await response.json();
+
+      if (!response.ok) {
         setError(data.error || "Registration failed");
-      } else {
-        setSuccess("Registration successful!");
-        setUsername("");
-        setPassword("");
-        setConfirmPassword("");
+        setIsLoading(false);
+        return;
       }
-    } catch (err) {
-      setError("Registration failed. Please try again.");
+
+      setSuccess("Registration successful! Redirecting...");
+      
+      // Clear auth state
+      localStorage.removeItem("mfa_verified");
+      // Mark intent for success page so reload there will redirect back to auth
+      sessionStorage.setItem("success_entry", "1");
+
+      router.push("/success");
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
