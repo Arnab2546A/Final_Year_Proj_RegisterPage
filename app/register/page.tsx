@@ -12,6 +12,24 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [usbDetected, setUsbDetected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkUsb = async () => {
+      try {
+        const res = await fetch("/api/check-usb");
+        const data = await res.json();
+        setUsbDetected(data.detected);
+      } catch (e) {
+        console.error(e);
+        setUsbDetected(false);
+      }
+    };
+
+    const interval = setInterval(checkUsb, 2000);
+    checkUsb();
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const authToken = localStorage.getItem("mfa_verified");
@@ -151,7 +169,24 @@ export default function RegisterPage() {
           />
         </div>
 
-        <button type="submit" disabled={isLoading} className="submit-button">
+        <div className="usb-status" style={{
+          padding: "10px",
+          marginBottom: "15px",
+          borderRadius: "5px",
+          textAlign: "center",
+          fontWeight: "bold",
+          backgroundColor: usbDetected ? "#e6ffed" : "#fff1f0",
+          color: usbDetected ? "#28a745" : "#d73a49",
+          border: `1px solid ${usbDetected ? "#28a745" : "#d73a49"}`
+        }}>
+          {usbDetected === null 
+            ? "Checking for USB Drive..." 
+            : usbDetected 
+              ? "✅ USB Drive Detected" 
+              : "❌ Please insert a USB Drive to Register"}
+        </div>
+
+        <button type="submit" disabled={isLoading || usbDetected === false} className="submit-button">
           {isLoading ? "Registering..." : "Register"}
         </button>
       </form>

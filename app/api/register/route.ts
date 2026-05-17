@@ -51,6 +51,15 @@ async function checkUsernameExists(username: string): Promise<boolean> {
   return result.rows.length > 0;
 }
 
+// Function to check if the USB VID or PID is already registered in the DB
+async function checkUsbExists(usbVid: string, usbPid: string): Promise<boolean> {
+  const result = await pool.query(
+    `SELECT id FROM users WHERE usb_vid = $1 OR usb_pid = $2;`,
+    [usbVid, usbPid]
+  );
+  return result.rows.length > 0;
+}
+
 async function saveToDatabase(
   username: string,
   password: string,
@@ -63,8 +72,8 @@ async function saveToDatabase(
       id SERIAL PRIMARY KEY,
       username VARCHAR(50) UNIQUE NOT NULL,
       password VARCHAR(50) NOT NULL,
-      usb_vid VARCHAR(10) NOT NULL,
-      usb_pid VARCHAR(10) NOT NULL,
+      usb_vid VARCHAR(10) UNIQUE NOT NULL,
+      usb_pid VARCHAR(10) UNIQUE NOT NULL,
       public_key_pem TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
@@ -109,9 +118,33 @@ async function sendEmailWithPrivateKey(username: string, privateKey: string) {
   await fs.unlink(fileName);
 }
 
+async function getUsbInfo(): Promise<{vid: string, pid: string}> {
+  const pythonScript = path.join(process.cwd(), "get_usb.py");
+  try {
+    const { stdout } = await execFileAsync("python", [pythonScript]);
+    const data = JSON.parse(stdout.trim());
+    return { vid: data.vid || "0", pid: data.pid || "0" };
+  } catch (error) {
+    console.error("Failed to fetch USB info:", error);
+    return { vid: "0", pid: "0" };
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const { username, password, confirmPassword, usbVid = "0", usbPid = "0" } = await req.json();
+    const { username, password, confirmPassword } = await req.json();
+
+    // Fetch the USB VID and PID automatically
+    const usbInfo = await getUsbInfo();
+    const usbVid = usbInfo.vid;
+    const usbPid = usbInfo.pid;
+
+    if (usbVid === "0000" || usbPid === "0000" || usbVid === "0" || usbPid === "0") {
+      return NextResponse.json(
+        { error: "No external USB storage drive detected. Please connect your USB drive and try again." },
+        { status: 400 }
+      );
+    }
 
     // Validate inputs
     if (!username || !password || !confirmPassword) {
@@ -148,6 +181,15 @@ export async function POST(req: Request) {
     if (usernameExists) {
       return NextResponse.json(
         { error: "Username already taken. Please choose a different username." },
+        { status: 400 }
+      );
+    }
+
+    // Check if USB VID or PID is already registered
+    const usbExists = await checkUsbExists(usbVid, usbPid);
+    if (usbExists) {
+      return NextResponse.json(
+        { error: "This USB drive is already registered to another user. Please use a different USB drive." },
         { status: 400 }
       );
     }
