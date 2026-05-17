@@ -40,7 +40,8 @@ export default function AuthPage() {
       }
 
       localStorage.setItem("mfa_verified", "true");
-      router.push("/");
+      document.cookie = "mfa_verified=true; path=/";
+      router.push("/register");
     } catch (err) {
       setError("Verification failed. Please try again.");
     } finally {
@@ -53,7 +54,9 @@ export default function AuthPage() {
       <form className="register-card" onSubmit={handleSubmit}>
         <div className="card-header">
           <h1>Verify Authentication</h1>
-          <p className="subtitle">Enter the 6-digit code from your authenticator app</p>
+          <p className="subtitle">
+            Enter the 6-digit code from your authenticator app
+          </p>
         </div>
 
         {error && <div className="error">{error}</div>}
@@ -65,7 +68,7 @@ export default function AuthPage() {
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            placeholder="123456"
+            placeholder="******"
             maxLength={6}
             value={token}
             onChange={(e) => setToken(e.target.value.replace(/\D/g, ""))}

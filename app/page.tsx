@@ -7,7 +7,7 @@ export default function HomeRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/verification");
+    router.replace("/register");
   }, [router]);
 
   return null;
