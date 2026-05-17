@@ -4,8 +4,15 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const mfaVerified = request.cookies.get("mfa_verified");
 
+  // Whenever someone goes to the root site URL, forcefully clear the cookie and go to /auth
+  if (request.nextUrl.pathname === "/") {
+    const response = NextResponse.redirect(new URL("/auth", request.url));
+    response.cookies.delete("mfa_verified");
+    return response;
+  }
+
   // If trying to access any protected route without mfa_verified cookie, redirect to /auth
-  if (!mfaVerified && request.nextUrl.pathname !== "/auth") {
+  if (!mfaVerified && request.nextUrl.pathname !== "/auth" && request.nextUrl.pathname !== "/success") {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 

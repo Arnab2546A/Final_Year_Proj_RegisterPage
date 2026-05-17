@@ -13,13 +13,14 @@ export default function SuccessPage() {
 
     // If page was reloaded, redirect to authenticator
     if (nav && nav.type === "reload") {
-      router.replace("/");
+      sessionStorage.removeItem("success_entry");
+      router.replace("/auth");
       return;
     }
 
     // If accessed without the flag (direct hit), redirect
     if (!cameFromRegister) {
-      router.replace("/");
+      router.replace("/auth");
       return;
     }
     // Keep the flag so the page remains visible during this session; reload will still redirect

@@ -7,8 +7,8 @@ export default function HomeRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // By default, the root path redirects to the auth page.
-    // The middleware will automatically forward to /register if already verified.
+    // Clear localStorage memory just to be double safe on the client side
+    localStorage.removeItem("mfa_verified");
     router.replace("/auth");
   }, [router]);
 
