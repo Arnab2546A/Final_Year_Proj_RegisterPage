@@ -36,7 +36,7 @@ export default function RegisterPage() {
     const cookie = document.cookie.split("; ").find((row) => row.startsWith("mfa_verified="));
 
     if (!authToken && !cookie) {
-      router.push("/");
+      router.push("/auth");
     }
   }, [router]);
 
@@ -104,8 +104,10 @@ export default function RegisterPage() {
 
       setSuccess("Registration successful! Redirecting...");
       
-      // Clear auth state
+      // Clear auth state and cookie so the next visit requires auth again
       localStorage.removeItem("mfa_verified");
+      document.cookie = "mfa_verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
       // Mark intent for success page so reload there will redirect back to auth
       sessionStorage.setItem("success_entry", "1");
 

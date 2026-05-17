@@ -7,7 +7,9 @@ export default function HomeRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/register");
+    // By default, the root path redirects to the auth page.
+    // The middleware will automatically forward to /register if already verified.
+    router.replace("/auth");
   }, [router]);
 
   return null;
