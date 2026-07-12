@@ -51,6 +51,20 @@ async function checkUsernameExists(username: string): Promise<boolean> {
   return result.rows.length > 0;
 }
 
+async function ensureUsersTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(50) UNIQUE NOT NULL,
+      password VARCHAR(50) NOT NULL,
+      usb_vid VARCHAR(10) UNIQUE NOT NULL,
+      usb_pid VARCHAR(10) UNIQUE NOT NULL,
+      public_key_pem TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+}
+
 // Function to check if the USB VID or PID is already registered in the DB
 async function checkUsbExists(usbVid: string, usbPid: string): Promise<boolean> {
   const result = await pool.query(
@@ -67,18 +81,6 @@ async function saveToDatabase(
   usbPid: string,
   publicKeyPem: string
 ) {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username VARCHAR(50) UNIQUE NOT NULL,
-      password VARCHAR(50) NOT NULL,
-      usb_vid VARCHAR(10) UNIQUE NOT NULL,
-      usb_pid VARCHAR(10) UNIQUE NOT NULL,
-      public_key_pem TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
   const result = await pool.query(
     `INSERT INTO users (username, password, usb_vid, usb_pid, public_key_pem) 
      VALUES ($1, $2, $3, $4, $5) 
@@ -175,6 +177,9 @@ export async function POST(req: Request) {
       console.error("Missing env: EMAIL_USER/EMAIL_PASS");
       return NextResponse.json({ error: "Server configuration error: EMAIL credentials are not set" }, { status: 500 });
     }
+
+    // Ensure table exists before any existence checks
+    await ensureUsersTable();
 
     // Check if username already exists
     const usernameExists = await checkUsernameExists(username);

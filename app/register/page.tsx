@@ -13,7 +13,6 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [usbDetected, setUsbDetected] = useState<boolean | null>(null);
-
   useEffect(() => {
     const checkUsb = async () => {
       try {
