@@ -182,10 +182,10 @@ export default function RegisterPage() {
           border: `1px solid ${usbDetected ? "#28a745" : "#d73a49"}`
         }}>
           {usbDetected === null 
-            ? "Checking for USB Drive..." 
+            ? "Checking for ESP32 Device..." 
             : usbDetected 
-              ? "✅ USB Drive Detected" 
-              : "❌ Please insert a USB Drive to Register"}
+              ? "✅ ESP32 Device Detected" 
+              : "❌ Please connect an ESP32 Device to Register"}
         </div>
 
         <button type="submit" disabled={isLoading || usbDetected === false} className="submit-button">
